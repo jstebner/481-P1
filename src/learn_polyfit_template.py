@@ -4,7 +4,7 @@ from sklearn import preprocessing
 from sklearn.linear_model import Ridge
 from sklearn.preprocessing import PolynomialFeatures
 
-D_X, D_y = np.loadtxt("D.dat", usecols=(0,1), unpack=True)
+D_X, D_y = np.loadtxt("data/train.dat", usecols=(0,1), unpack=True)
 
 X = D_X.reshape(-1,1)
 y = D_y.reshape(-1,1)
@@ -20,7 +20,7 @@ regr = Ridge(alpha=lambda_val,fit_intercept=False,solver='cholesky')
 regr.fit(X_trans, y)
 
 # Saving the weights in a text file
-weights_file = open(f"w.dat","w")
+weights_file = open(f"out/w.dat","w")
 
 for i in range(d+1):
     weights_file.write(str(regr.coef_[0][i]))

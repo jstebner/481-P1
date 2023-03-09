@@ -8,7 +8,11 @@ def RMSE(hyp_f, data: np.array) -> float:
     y_pred = hyp_f(data[:, 0])
     rmse = np.linalg.norm(y_test - y_pred) * n**-0.5
     return round(rmse, 5)
-    
+
+# NOTE: for poly reg: scale x in each dim, transform each dim with poly term, 
+#       scale again, then fit (so scaler on transform matrix) to make weights 
+#       comparable / interpretable
+
 # following sklearn pattern
 class LinearRegressor:
     # TODO: this
