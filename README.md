@@ -1,3 +1,3 @@
-# 488-P1
+# 481-P1
 
-CIS 488 project 1 :)
+CIS 481 project 1 :)
