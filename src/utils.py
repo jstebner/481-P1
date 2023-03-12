@@ -27,25 +27,40 @@ def cross_val_score(estimator, x: np.array, y: np.array, k: int):
     return np.mean(scores)
         
 
-class RidgeRegressor:
-    def __init__(self, λ: float):
-        self.λ = λ
+class LinearRegressor:
+    def __init__(self):
         self.w = None
 
     # TODO: this
     def fit(self, X_train: np.array, y_train: np.array) -> None:
-        # self.w = (X_train.T * X_train.)
-        pass
+        pseudo_inv = np.cross(
+            np.linalg.inv(
+                np.cross(X_train.T, X_train)
+            ), 
+            X_train.T
+        )
+        
     
     # TODO: this
     def predict(self, X_test) -> np.array:
         pass
     
-    # REVIEW: if this is even right lol
     def score(self, X_test, y_test) -> float:
-        # gives MSE
-        return RMSE(y_test, self.predict(X_test))**2
+        mse = RMSE(y_test, self.predict(X_test))**2
+        return mse
     
+class RidgeRegressor(LinearRegressor):
+    def __init__(self, λ: float) -> None:
+        self.w = None
+        self.λ = λ
+        
+    def score(self, X_test, y_test) -> float:
+        n = len(X_test)
+        penalty = self.λ/2 * np.linalg.norm(self.w)**2
+        L2_reg_sqr_err = (n/2) * RMSE(y_test, self.predict(X_test))**2 + penalty
+
+        return L2_reg_sqr_err
+
 class StandardScaler:
     def __init__(self) -> None:
         pass
@@ -54,6 +69,7 @@ class StandardScaler:
         self.μ = np.mean(x)
         self.σ = np.std(x)
     
+    # DEBUG: this dont work right for matrices
     def transform(self, x) -> np.array:
         return (x - self.μ) / self.σ
     
@@ -66,17 +82,18 @@ class StandardScaler:
         return self.transform(x)
 
 # TODO: this
-# REVIEW: maybe just dont make this
+# REVIEW: maybe dont do this
 class PolynomialFeatures:
-    def __init__(self, d: int) -> None:
-        self.degree = d
+    def __init__(self, degree: int) -> None:
+        self.degree = degree
         
     def fit(self, x: np.array) -> None:
         pass
     
     def transform(self, x: np.array) -> np.array:
         pass
-    
+
+# REVIEW: this
 class Pipeline:
     def __init__(self, *steps) -> None:
         """Pipeline assumes last object is predictor and all others are transformers
