@@ -1,12 +1,5 @@
 import numpy as np
 
-def RMSE(y_test: np.array, y_pred: np.array) -> float:
-    # using this bc its equiv to classic RMSE formula
-    # but i like the code for this one better
-    n = len(y_test)
-    rmse = np.linalg.norm(y_test - y_pred) * n**-0.5
-    return round(rmse, 5)
-
 # REVIEW: this?
 def cross_val_score(estimator, x: np.array, y: np.array, k: int):
     # im sure theres a better way to do this with numpy 
@@ -46,8 +39,12 @@ class LinearRegressor:
         pass
     
     def score(self, X_test, y_test) -> float:
-        mse = RMSE(y_test, self.predict(X_test))**2
-        return mse
+        # using this bc its equiv to RMSE formula
+        # but i like the code for this one better
+        n = len(y_test)
+        y_pred = self.predict(X_test)
+        rmse = np.linalg.norm(y_test - y_pred) * (n**-0.5)
+        return rmse
     
 class RidgeRegressor(LinearRegressor):
     def __init__(self, λ: float) -> None:
@@ -62,28 +59,23 @@ class RidgeRegressor(LinearRegressor):
             X_train.T
         )
         self.w = np.matmul(pseudo_inv, y_train)
-        
-    def score(self, X_test, y_test) -> float:
-        n = len(X_test)
-        penalty = self.λ/2 * np.linalg.norm(self.w)**2
-        L2_reg_sqr_err = (n/2) * RMSE(y_test, self.predict(X_test))**2 + penalty
-
-        return L2_reg_sqr_err
 
 class StandardScaler:
     def __init__(self) -> None:
         pass
     
     def fit(self, x) -> None:
-        self.μ = np.mean(x)
-        self.σ = np.std(x)
+        # applies function f to each dimension d in data X
+        apply_per_dim = lambda f, X: np.array([f(X[:, d]) for d in range(X.shape[1])])
+        self.μ = apply_per_dim(np.mean, x)
+        self.σ = apply_per_dim(np.std, x)
+        self.σ[self.σ == 0] = 1 # avoid 0^-1
     
-    # DEBUG: this dont work right for matrices
     def transform(self, x) -> np.array:
         return (x - self.μ) / self.σ
     
     # REVIEW: when do we ever use this bro
-    def untransform(self, x) -> np.array:
+    def inverse_transform(self, x) -> np.array:
         return x * self.σ + self.μ
     
     def fit_transform(self, x) -> np.array:
