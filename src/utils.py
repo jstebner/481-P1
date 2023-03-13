@@ -33,13 +33,13 @@ class LinearRegressor:
 
     # TODO: this
     def fit(self, X_train: np.array, y_train: np.array) -> None:
-        pseudo_inv = np.cross(
+        pseudo_inv = np.matmul(
             np.linalg.inv(
-                np.cross(X_train.T, X_train)
+                np.matmul(X_train.T, X_train)
             ), 
             X_train.T
         )
-        
+        self.w = np.matmul(pseudo_inv, y_train)
     
     # TODO: this
     def predict(self, X_test) -> np.array:
@@ -53,6 +53,15 @@ class RidgeRegressor(LinearRegressor):
     def __init__(self, λ: float) -> None:
         self.w = None
         self.λ = λ
+        
+    def fit(self, X_train: np.array, y_train: np.array) -> None:
+        pseudo_inv = np.matmul(
+            np.linalg.inv(
+                np.matmul(X_train.T, X_train) + self.λ*np.identity(n=X_train.shape[1])
+            ), 
+            X_train.T
+        )
+        self.w = np.matmul(pseudo_inv, y_train)
         
     def score(self, X_test, y_test) -> float:
         n = len(X_test)
@@ -92,6 +101,10 @@ class PolynomialFeatures:
     
     def transform(self, x: np.array) -> np.array:
         pass
+    
+    def fit_transform(self, x: np.array) -> np.array:
+        self.fit(x)
+        return self.transform(x)
 
 # REVIEW: this
 class Pipeline:
@@ -100,7 +113,6 @@ class Pipeline:
         """
         self.transformers = steps[:-1]
         self.predictor = steps[-1]
-        self.w = self.predictor.w
     
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         for transformer in self.transformers[:-1]:

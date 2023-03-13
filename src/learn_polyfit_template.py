@@ -9,8 +9,8 @@ D_X, D_y = np.loadtxt("data/train.dat", usecols=(0,1), unpack=True)
 X = D_X.reshape(-1,1)
 y = D_y.reshape(-1,1)
 
-d = 0
-lambda_val = 0
+d = 1
+lambda_val = 1
 
 poly = PolynomialFeatures(degree=d)
 X_trans = poly.fit_transform(X)
@@ -23,8 +23,9 @@ regr.fit(X_trans, y)
 weights_file = open(f"out/w.dat","w")
 
 for i in range(d+1):
-    weights_file.write(str(regr.coef_[0][i]))
-    weights_file.write("\n")
+    # weights_file.write(str(regr.coef_[0][i]))
+    # weights_file.write("\n")
+    print(str(regr.coef_[0][i]))
 
 weights_file.close()
 
