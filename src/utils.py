@@ -41,10 +41,6 @@ class RidgeRegressor(LinearRegressor):
         )
         self.w = np.matmul(pseudo_inv, y_train)
 
-
-# █░█ ▀█▀ █ █░░
-# █▄█ ░█░ █ █▄▄
-
 class Pipeline:
     def __init__(self, *steps) -> None:
         """Pipeline assumes last object is predictor and all others are transformers
@@ -98,7 +94,6 @@ class StandardScaler:
         self.fit(x)
         return self.transform(x)
 
-# TODO: clean this jawn
 class PolynomialFeatures:
     def __init__(self, degree: int) -> None:
         self.degree = degree
@@ -110,32 +105,31 @@ class PolynomialFeatures:
         for _ in range(self.degree):
             curr = list()
             for prev in idcs[-1]:
-                for i in range(m-1, -1, -1):
-                    if prev[i] != 0:
-                        l = i
-                        break
-                else:
-                    l = 0
-                for i in range(l, m):
+                # find last nonzero exp
+                last = max(np.max(np.nonzero([1]+prev))-1, 0)
+
+                for i in range(last, m):
                     new = prev.copy()
                     new[i] += 1
                     curr.append(new)
             idcs.append(curr)
+        # flatten array
         self.exponents = reduce(lambda a, b: a+b, idcs)
     
     def transform(self, X: np.array) -> np.array:
-        phi = list()
-        for row in X:
-            transform_row = list()
-            for term in self.exponents:
-                poly_term = list()
-                for exp, var in zip(term, row):
-                    poly_term.append(var**exp)
-                transform_row.append(reduce(lambda a,b: a*b, poly_term))
-            
-            phi.append(np.array(transform_row))
-        
-        return np.array(phi)
+        # theres probably libraries that make what i do better 
+        # but i cant find them :)
+        # also i am personally olbigated to include at least 1 oneliner in every project i make
+        return np.array([
+            np.array([
+                reduce(
+                    lambda a,b: a*b, 
+                    [var**exp for var, exp in zip(row, term)]
+                ) 
+                for term in self.exponents
+            ]) 
+            for row in X
+        ])
     
     def fit_transform(self, x: np.array) -> np.array:
         self.fit(x)
