@@ -1,5 +1,5 @@
 import numpy as np
-from itertools import combinations
+from functools import reduce
         
 
 # █▀▄▀█ █▀█ █▀▄ █▀▀ █░░ █▀
@@ -42,48 +42,6 @@ class RidgeRegressor(LinearRegressor):
         self.w = np.matmul(pseudo_inv, y_train)
 
 
-# ▀█▀ █▀█ ▄▀█ █▄░█ █▀ █▀▀ █▀█ █▀█ █▀▄▀█ █▀
-# ░█░ █▀▄ █▀█ █░▀█ ▄█ █▀░ █▄█ █▀▄ █░▀░█ ▄█
-
-class StandardScaler:
-    def __init__(self) -> None:
-        pass
-    
-    def fit(self, x) -> None:
-        # applies function f to each dimension d in data X
-        apply_per_dim = lambda f, X: np.array([f(X[:, d]) for d in range(X.shape[1])])
-        self.μ = apply_per_dim(np.mean, x)
-        self.σ = apply_per_dim(np.std, x)
-        self.σ[self.σ == 0] = 1 # avoid 0^-1
-    
-    def transform(self, x) -> np.array:
-        return (x - self.μ) / self.σ
-    
-    # REVIEW: when do we ever use this
-    def inverse_transform(self, x) -> np.array:
-        return x * self.σ + self.μ
-    
-    def fit_transform(self, x) -> np.array:
-        self.fit(x)
-        return self.transform(x)
-
-# TODO: this
-# REVIEW: maybe dont do this
-class PolynomialFeatures:
-    def __init__(self, degree: int) -> None:
-        self.degree = degree
-        
-    def fit(self, x: np.array) -> None:
-        pass
-    
-    def transform(self, x: np.array) -> np.array:
-        pass
-    
-    def fit_transform(self, x: np.array) -> np.array:
-        self.fit(x)
-        return self.transform(x)
-
-
 # █░█ ▀█▀ █ █░░
 # █▄█ ░█░ █ █▄▄
 
@@ -113,6 +71,75 @@ class Pipeline:
         """
         y_pred = self.predict(X_test)
         return RMSE(y_test, y_pred)
+    
+    
+# ▀█▀ █▀█ ▄▀█ █▄░█ █▀ █▀▀ █▀█ █▀█ █▀▄▀█ █▀
+# ░█░ █▀▄ █▀█ █░▀█ ▄█ █▀░ █▄█ █▀▄ █░▀░█ ▄█
+
+class StandardScaler:
+    def __init__(self) -> None:
+        pass
+    
+    def fit(self, x) -> None:
+        # applies function f to each dimension d in data X
+        apply_per_dim = lambda f, X: np.array([f(X[:, d]) for d in range(X.shape[1])])
+        self.μ = apply_per_dim(np.mean, x)
+        self.σ = apply_per_dim(np.std, x)
+        self.σ[self.σ == 0] = 1 # avoid 0^-1
+    
+    def transform(self, x) -> np.array:
+        return (x - self.μ) / self.σ
+    
+    # REVIEW: when do we ever use this
+    def inverse_transform(self, x) -> np.array:
+        return x * self.σ + self.μ
+    
+    def fit_transform(self, x) -> np.array:
+        self.fit(x)
+        return self.transform(x)
+
+# TODO: clean this jawn
+class PolynomialFeatures:
+    def __init__(self, degree: int) -> None:
+        self.degree = degree
+        self.exponents = None
+        
+    def fit(self, X: np.array) -> None:
+        m = X.shape[1]
+        idcs = [[[0 for _ in range(m)]]]
+        for _ in range(self.degree):
+            curr = list()
+            for prev in idcs[-1]:
+                for i in range(m-1, -1, -1):
+                    if prev[i] != 0:
+                        l = i
+                        break
+                else:
+                    l = 0
+                for i in range(l, m):
+                    new = prev.copy()
+                    new[i] += 1
+                    curr.append(new)
+            idcs.append(curr)
+        self.exponents = reduce(lambda a, b: a+b, idcs)
+    
+    def transform(self, X: np.array) -> np.array:
+        phi = list()
+        for row in X:
+            transform_row = list()
+            for term in self.exponents:
+                poly_term = list()
+                for exp, var in zip(term, row):
+                    poly_term.append(var**exp)
+                transform_row.append(reduce(lambda a,b: a*b, poly_term))
+            
+            phi.append(np.array(transform_row))
+        
+        return np.array(phi)
+    
+    def fit_transform(self, x: np.array) -> np.array:
+        self.fit(x)
+        return self.transform(x)
     
     
 # █▀ █▀▀ █▀█ █▀█ █ █▄░█ █▀▀
