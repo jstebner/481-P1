@@ -1,34 +1,5 @@
 import numpy as np
 from itertools import combinations
-
-
-# █▀ █▀▀ █▀█ █▀█ █ █▄░█ █▀▀
-# ▄█ █▄▄ █▄█ █▀▄ █ █░▀█ █▄█
-
-def RMSE(y_true: np.array, y_pred: np.array) -> float:
-    # using this bc its equiv to RMSE formula
-    # but i like the code for this one better
-    n = len(y_true)
-    rmse = np.linalg.norm(y_true - y_pred) * (n**-0.5)
-    return rmse
-
-def cross_val_score(model, x: np.array, y: np.array, k: int):
-    # im sure theres a better way to do this with numpy 
-    # but i dont wanna find out
-    scores = list()
-    n = len(x)
-    for i in range(k):
-        l, r = i*n//k, (i+1)*n//k
-        X_train = np.array(list(x[0:l])+list(x[r:]))
-        y_train = np.array(list(y[0:l])+list(y[r:]))
-        X_valid = x[l:r]
-        y_valid = y[l:r]
-        
-        model.fit(X_train, y_train)
-        score = model.score(X_valid, y_valid)
-        scores.append(score)
-    
-    return np.mean(scores)
         
 
 # █▀▄▀█ █▀█ █▀▄ █▀▀ █░░ █▀
@@ -36,7 +7,7 @@ def cross_val_score(model, x: np.array, y: np.array, k: int):
 
 class LinearRegressor:
     def __init__(self):
-        self.coef_ = None
+        self.w = None
 
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         pseudo_inv = np.matmul(
@@ -45,18 +16,20 @@ class LinearRegressor:
             ), 
             X_train.T
         )
-        self.coef_ = np.matmul(pseudo_inv, y_train)
+        self.w = np.matmul(pseudo_inv, y_train)
     
     def predict(self, X_test) -> np.array:
-        return np.matmul(X_test, self.coef_) 
+        return np.matmul(X_test, self.w) 
     
     def score(self, X_test, y_test) -> float:
+        """perform RMSE on estimator, requires that model has been fit
+        """
         y_pred = self.predict(X_test)
         return RMSE(y_test, y_pred)
     
 class RidgeRegressor(LinearRegressor):
     def __init__(self, λ: float) -> None:
-        self.coef_ = None
+        self.w = None
         self.λ = λ
         
     def fit(self, X_train: np.array, y_train: np.array) -> None:
@@ -66,7 +39,7 @@ class RidgeRegressor(LinearRegressor):
             ), 
             X_train.T
         )
-        self.coef_ = np.matmul(pseudo_inv, y_train)
+        self.w = np.matmul(pseudo_inv, y_train)
 
 
 # ▀█▀ █▀█ ▄▀█ █▄░█ █▀ █▀▀ █▀█ █▀█ █▀▄▀█ █▀
@@ -127,7 +100,7 @@ class Pipeline:
             X_train = transformer.fit_transform(X_train)
         
         self.predictor.fit(X_train, y_train)
-        self.w = self.predictor.coef_
+        self.w = self.predictor.w
     
     def predict(self, x: np.array) -> np.array:
         for transformer in self.transformers[:-1]:
@@ -136,5 +109,36 @@ class Pipeline:
         return self.predictor.predict(x)
 
     def score(self, X_test: np.array, y_test: np.array) -> float:
+        """perform RMSE on estimator, requires that model has been fit
+        """
         y_pred = self.predict(X_test)
         return RMSE(y_test, y_pred)
+    
+    
+# █▀ █▀▀ █▀█ █▀█ █ █▄░█ █▀▀
+# ▄█ █▄▄ █▄█ █▀▄ █ █░▀█ █▄█
+
+def RMSE(y_true: np.array, y_pred: np.array) -> float:
+    # using this bc its equiv to RMSE formula
+    # but i like the code for this one better
+    n = len(y_true)
+    rmse = np.linalg.norm(y_true - y_pred) * (n**-0.5)
+    return rmse
+
+def cross_val_score(model: LinearRegressor, x: np.array, y: np.array, k: int):
+    # im sure theres a better way to do this with numpy 
+    # but i dont wanna find out
+    scores = list()
+    n = len(x)
+    for i in range(k):
+        l, r = i*n//k, (i+1)*n//k
+        X_train = np.array(list(x[0:l])+list(x[r:]))
+        y_train = np.array(list(y[0:l])+list(y[r:]))
+        X_valid = x[l:r]
+        y_valid = y[l:r]
+        
+        model.fit(X_train, y_train)
+        score = model.score(X_valid, y_valid)
+        scores.append(score)
+    
+    return np.mean(scores)
