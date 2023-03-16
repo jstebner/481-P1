@@ -7,7 +7,7 @@ from functools import reduce
 
 class LinearRegressor:
     def __init__(self):
-        self.w = None
+        self.coef_ = None
 
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         pseudo_inv = np.matmul(
@@ -16,10 +16,10 @@ class LinearRegressor:
             ), 
             X_train.T
         )
-        self.w = np.matmul(pseudo_inv, y_train)
+        self.coef_ = np.matmul(pseudo_inv, y_train)
     
     def predict(self, X_test) -> np.array:
-        return np.matmul(X_test, self.w) 
+        return np.matmul(X_test, self.coef_) 
     
     def score(self, X_test, y_test) -> float:
         """perform RMSE on estimator, requires that model has been fit
@@ -29,7 +29,7 @@ class LinearRegressor:
     
 class RidgeRegressor(LinearRegressor):
     def __init__(self, λ: float) -> None:
-        self.w = None
+        self.coef_ = None
         self.λ = λ
         
     def fit(self, X_train: np.array, y_train: np.array) -> None:
@@ -39,7 +39,11 @@ class RidgeRegressor(LinearRegressor):
             ), 
             X_train.T
         )
-        self.w = np.matmul(pseudo_inv, y_train)
+        self.coef_ = np.matmul(pseudo_inv, y_train)
+
+
+# █░█ ▀█▀ █ █░░ █▀
+# █▄█ ░█░ █ █▄▄ ▄█
 
 class Pipeline:
     def __init__(self, *steps) -> None:
@@ -47,21 +51,40 @@ class Pipeline:
         """
         self.transformers = steps[:-1]
         self.predictor = steps[-1]
-        self.w = None
+        self.coef_ = None
     
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         for transformer in self.transformers[:-1]:
             X_train = transformer.fit_transform(X_train)
         
         self.predictor.fit(X_train, y_train)
-        self.w = self.predictor.w
+        self.coef_ = self.predictor.coef_
     
-    def predict(self, x: np.array) -> np.array:
+    def predict(self, X: np.array) -> np.array:
         for transformer in self.transformers[:-1]:
-            x = transformer.transform(x)
+            X = transformer.transform(X)
         
-        return self.predictor.predict(x)
+        return self.predictor.predict(X)
 
+    def score(self, X_test: np.array, y_test: np.array) -> float:
+        """perform RMSE on estimator, requires that model has been fit
+        """
+        y_pred = self.predict(X_test)
+        return RMSE(y_test, y_pred)
+
+class OutputScalingWrapper:
+    def __init__(self, core) -> None:
+        self.model = core
+        self.y_scaler = StandardScaler()
+    
+    def fit(self, X_train: np.array, y_train: np.array) -> None:
+        y_trans = self.y_scaler.fit_transform(y_train)
+        self.model.fit(X_train, y_trans)
+    
+    def predict(self, X: np.array) -> None:
+        y_pred_trans = self.model.predict(X)
+        return self.y_scaler.inverse_transform(y_pred_trans)
+    
     def score(self, X_test: np.array, y_test: np.array) -> float:
         """perform RMSE on estimator, requires that model has been fit
         """
@@ -76,23 +99,23 @@ class StandardScaler:
     def __init__(self) -> None:
         pass
     
-    def fit(self, x) -> None:
+    def fit(self, X) -> None:
         # applies function f to each dimension d in data X
         apply_per_dim = lambda f, X: np.array([f(X[:, d]) for d in range(X.shape[1])])
-        self.μ = apply_per_dim(np.mean, x)
-        self.σ = apply_per_dim(np.std, x)
+        self.μ = apply_per_dim(np.mean, X)
+        self.σ = apply_per_dim(np.std, X)
         self.σ[self.σ == 0] = 1 # avoid 0^-1
     
-    def transform(self, x) -> np.array:
-        return (x - self.μ) / self.σ
+    def transform(self, X) -> np.array:
+        return (X - self.μ) / self.σ
     
     # REVIEW: when do we ever use this
-    def inverse_transform(self, x) -> np.array:
-        return x * self.σ + self.μ
+    def inverse_transform(self, X) -> np.array:
+        return X * self.σ + self.μ
     
-    def fit_transform(self, x) -> np.array:
-        self.fit(x)
-        return self.transform(x)
+    def fit_transform(self, X) -> np.array:
+        self.fit(X)
+        return self.transform(X)
 
 class PolynomialFeatures:
     def __init__(self, degree: int) -> None:
