@@ -7,7 +7,7 @@ from functools import reduce
 
 class LinearRegressor:
     def __init__(self):
-        self.coef_ = None
+        self.w = None
 
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         pseudo_inv = np.matmul(
@@ -16,10 +16,10 @@ class LinearRegressor:
             ), 
             X_train.T
         )
-        self.coef_ = np.matmul(pseudo_inv, y_train)
+        self.w = np.matmul(pseudo_inv, y_train)
     
     def predict(self, X_test) -> np.array:
-        return np.matmul(X_test, self.coef_) 
+        return np.matmul(X_test, self.w) 
     
     def score(self, X_test, y_test) -> float:
         """perform RMSE on estimator, requires that model has been fit
@@ -29,7 +29,7 @@ class LinearRegressor:
     
 class RidgeRegressor(LinearRegressor):
     def __init__(self, λ: float) -> None:
-        self.coef_ = None
+        self.w = None
         self.λ = λ
         
     def fit(self, X_train: np.array, y_train: np.array) -> None:
@@ -39,7 +39,7 @@ class RidgeRegressor(LinearRegressor):
             ), 
             X_train.T
         )
-        self.coef_ = np.matmul(pseudo_inv, y_train)
+        self.w = np.matmul(pseudo_inv, y_train)
 
 
 # █░█ ▀█▀ █ █░░ █▀
@@ -51,14 +51,14 @@ class Pipeline:
         """
         self.transformers = steps[:-1]
         self.predictor = steps[-1]
-        self.coef_ = None
+        self.w = None
     
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         for transformer in self.transformers[:-1]:
             X_train = transformer.fit_transform(X_train)
         
         self.predictor.fit(X_train, y_train)
-        self.coef_ = self.predictor.coef_
+        self.w = self.predictor.w
     
     def predict(self, X: np.array) -> np.array:
         for transformer in self.transformers[:-1]:
@@ -73,13 +73,15 @@ class Pipeline:
         return RMSE(y_test, y_pred)
 
 class OutputScalingWrapper:
-    def __init__(self, core) -> None:
-        self.model = core
+    def __init__(self, model) -> None:
+        self.model = model
         self.y_scaler = StandardScaler()
+        self.w = None
     
     def fit(self, X_train: np.array, y_train: np.array) -> None:
         y_trans = self.y_scaler.fit_transform(y_train)
         self.model.fit(X_train, y_trans)
+        self.w = self.model.w
     
     def predict(self, X: np.array) -> None:
         y_pred_trans = self.model.predict(X)
