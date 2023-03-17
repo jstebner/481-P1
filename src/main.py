@@ -96,7 +96,7 @@ def main():
     # 5
     # plot d* curve over data
     plt.scatter(X_train, y_train, color='green', label='Train data')
-    plt.scatter(X_test, y_test, color='red', label='Test data')
+    plt.scatter(X_test, y_test, color='red', label='Test data', marker='x')
     years = np.array(list(range(1968, 2024)))
     years_inp = years.reshape(-1,1)
     plt.plot(years, model.predict(years_inp), label='Fit Polynomial Curve')

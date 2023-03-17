@@ -1,12 +1,12 @@
 # 481-P1
 Project 1 Report: Polynomial Curve-Fitting Regression for Working-Age Data
 
-Full writeup is in docs/project1_report.pdf[# TODO make this link]
+Full writeup is in [docs/project1_report.pdf](docs/project1_report.pdf)
 
 ## Installation
 All dependencies can be installed by running:
 ```
-python3 -m pip install -r requirements.txt
+$ python3 -m pip install -r requirements.txt
 ```
 
 
