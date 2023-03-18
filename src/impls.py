@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib import pyplot as plt
 from functools import reduce
         
 
@@ -188,3 +189,38 @@ def cross_val_score(model: LinearRegressor, x: np.array, y: np.array, k: int):
         scores.append(score)
     
     return np.mean(scores)
+
+
+# █▀▀ ▀▄▀ ▀█▀ █▀█ ▄▀█ █▀
+# ██▄ █░█ ░█░ █▀▄ █▀█ ▄█
+
+def plot_line(x, y, label, clr, show_min=True):
+    plt.plot(x, y, label=label, color=clr)
+    i = y.index(min(y))
+    if not show_min:
+        return
+    plt.text(x[i]+0.2, y[i]-0.02, f'~{y[i]:.2f}')
+    plt.plot(x[i], y[i], 
+        marker='o', 
+        markerfacecolor='white', 
+        markeredgecolor=clr, 
+        markersize=7,
+        markeredgewidth=1.5
+    )
+    if show_min: 
+        return x[i]
+    return None
+
+def load_proj_data():
+    """returns X_train, y_train, X_test, y_test
+    """
+    X_train, y_train = np.loadtxt('../data/train.dat', usecols=(0,1), unpack=True)
+    X_test, y_test = np.loadtxt('../data/test.dat', usecols=(0,1), unpack=True)
+
+    X_train = X_train.reshape(-1,1)
+    y_train = y_train.reshape(-1,1)
+
+    X_test = X_test.reshape(-1,1)
+    y_test = y_test.reshape(-1,1)
+    
+    return X_train, y_train, X_test, y_test

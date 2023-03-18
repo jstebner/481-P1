@@ -4,14 +4,7 @@ import numpy as np
 
 def main():
     # load data
-    X_train, y_train = np.loadtxt('../data/train.dat', usecols=(0,1), unpack=True)
-    X_test, y_test = np.loadtxt('../data/test.dat', usecols=(0,1), unpack=True)
-
-    X_train = X_train.reshape(-1,1)
-    y_train = y_train.reshape(-1,1)
-
-    X_test = X_test.reshape(-1,1)
-    y_test = y_test.reshape(-1,1)
+    X_train, y_train, X_test, y_test = load_proj_data()
     
     
     # 1
@@ -42,24 +35,8 @@ def main():
     # output results of cross validation
     with open('../out/cv_errors_data.dat', 'w') as file:
         file.write('\n'.join(f'{d} {e}' for d, e in zip(degree, cv_err)))
-    
-    def plot_line(y, label, clr, show_min=True):
-        nonlocal d_opt
-        plt.plot(degree, y, label=label, color=clr)
-        i = y.index(min(y))
-        d_opt = degree[i]
-        if not show_min:
-            return
-        plt.text(degree[i]+0.2, y[i]-0.02, f'~{y[i]:.2f}')
-        plt.plot(degree[i], y[i], 
-            marker='o', 
-            markerfacecolor='white', 
-            markeredgecolor=clr, 
-            markersize=7,
-            markeredgewidth=1.5
-        )
 
-    plot_line(cv_err, 'cv err', 'red')
+    d_opt = plot_line(degree, cv_err, 'cv err', 'red')
 
     plt.xticks(degree)
     plt.xlabel('degree')
@@ -89,8 +66,11 @@ def main():
     # 4
     # training and test rmse
     print(f'LinearRegressor with degree {d_opt} polynomial features:')
-    print('\tTraining RMSE:', model.score(X_train, y_train))
-    print('\tTesting RMSE:', model.score(X_test, y_test))
+    train_loss = model.score(X_train, y_train)
+    test_loss = model.score(X_test, y_test)
+    print('\tTraining RMSE:',train_loss)
+    print('\tTesting RMSE:', test_loss)
+    print('\tRelative Error:', 100*abs(test_loss-train_loss)/train_loss,'%')
     
     
     # 5
