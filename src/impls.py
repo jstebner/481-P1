@@ -112,7 +112,6 @@ class StandardScaler:
     def transform(self, X) -> np.array:
         return (X - self.μ) / self.σ
     
-    # REVIEW: when do we ever use this
     def inverse_transform(self, X) -> np.array:
         return X * self.σ + self.μ
     
@@ -194,16 +193,15 @@ def cross_val_score(model: LinearRegressor, x: np.array, y: np.array, k: int):
 # █▀▀ ▀▄▀ ▀█▀ █▀█ ▄▀█ █▀
 # ██▄ █░█ ░█░ █▀▄ █▀█ ▄█
 
-def plot_line(x, y, label, clr, show_min=True):
-    plt.plot(x, y, label=label, color=clr)
+def plot_line(x, y, label, arg, show_min=True):
+    plt.plot(x, y, arg, label=label)
     i = y.index(min(y))
     if not show_min:
         return
     plt.text(x[i]+0.2, y[i]-0.02, f'~{y[i]:.2f}')
-    plt.plot(x[i], y[i], 
+    plt.plot(x[i], y[i], arg,
         marker='o', 
         markerfacecolor='white', 
-        markeredgecolor=clr, 
         markersize=7,
         markeredgewidth=1.5
     )

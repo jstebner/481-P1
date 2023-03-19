@@ -36,7 +36,7 @@ def main():
     with open('../out/cv_errors_data.dat', 'w') as file:
         file.write('\n'.join(f'{d} {e}' for d, e in zip(degree, cv_err)))
 
-    d_opt = plot_line(degree, cv_err, 'cv err', 'red')
+    d_opt = plot_line(degree, cv_err, 'cv err', 'C1')
 
     plt.xticks(degree)
     plt.xlabel('degree')
@@ -75,11 +75,11 @@ def main():
     
     # 5
     # plot d* curve over data
-    plt.scatter(X_train, y_train, color='green', label='Train data')
-    plt.scatter(X_test, y_test, color='red', label='Test data', marker='x')
+    plt.scatter(X_train, y_train, color='C2', label='Train data')
+    plt.scatter(X_test, y_test, color='C3', label='Test data', marker='x')
     years = np.array(list(range(1968, 2024)))
     years_inp = years.reshape(-1,1)
-    plt.plot(years, model.predict(years_inp), label='Fit Polynomial Curve')
+    plt.plot(years, model.predict(years_inp), label='Fit Polynomial Curve', color='C0')
 
     plt.xlabel('Year')
     plt.ylabel('Working-Age Population')
