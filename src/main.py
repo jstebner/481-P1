@@ -4,7 +4,7 @@ import numpy as np
 
 def main():
     # load data
-    X_train, y_train, X_test, y_test = load_proj_data()
+    X_train, X_test, y_train, y_test = load_proj_data()
     
     
     # 1

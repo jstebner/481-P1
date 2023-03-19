@@ -221,4 +221,4 @@ def load_proj_data():
     X_test = X_test.reshape(-1,1)
     y_test = y_test.reshape(-1,1)
     
-    return X_train, y_train, X_test, y_test
+    return X_train, X_test, y_train, y_test
