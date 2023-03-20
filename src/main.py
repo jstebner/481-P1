@@ -60,7 +60,7 @@ def main():
 
     # 3
     # snag w*
-    with open('../out/w.dat', 'w') as file:
+    with open('../out/w_linear.dat', 'w') as file:
         file.write('\n'.join(map(str, model.w.T[0])))
     
     # 4

@@ -193,12 +193,12 @@ def cross_val_score(model: LinearRegressor, x: np.array, y: np.array, k: int):
 # █▀▀ ▀▄▀ ▀█▀ █▀█ ▄▀█ █▀
 # ██▄ █░█ ░█░ █▀▄ █▀█ ▄█
 
-def plot_line(x, y, label, arg, show_min=True):
+def plot_line(x, y, label, arg, offset=(0.2, -0.02),show_min=True):
     plt.plot(x, y, arg, label=label)
     i = y.index(min(y))
     if not show_min:
         return
-    plt.text(x[i]+0.2, y[i]-0.02, f'~{y[i]:.2f}')
+    plt.text(x[i]+offset[0], y[i]+offset[1], f'~{y[i]:.2f}')
     plt.plot(x[i], y[i], arg,
         marker='o', 
         markerfacecolor='white', 
