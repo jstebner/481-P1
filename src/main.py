@@ -21,7 +21,6 @@ def main():
             Pipeline(
                 StandardScaler(),
                 PolynomialFeatures(degree=d),
-                StandardScaler(),
                 LinearRegressor()
             )
         )
@@ -52,7 +51,6 @@ def main():
         Pipeline(
             StandardScaler(),
             PolynomialFeatures(degree=d_opt),
-            StandardScaler(),
             LinearRegressor()
         )
     )

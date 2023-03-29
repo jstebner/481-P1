@@ -55,14 +55,14 @@ class Pipeline:
         self.w = None
     
     def fit(self, X_train: np.array, y_train: np.array) -> None:
-        for transformer in self.transformers[:-1]:
+        for transformer in self.transformers:
             X_train = transformer.fit_transform(X_train)
         
         self.predictor.fit(X_train, y_train)
         self.w = self.predictor.w
     
     def predict(self, X: np.array) -> np.array:
-        for transformer in self.transformers[:-1]:
+        for transformer in self.transformers:
             X = transformer.transform(X)
         
         return self.predictor.predict(X)
