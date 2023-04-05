@@ -107,7 +107,9 @@ class StandardScaler:
         apply_per_dim = lambda f, X: np.array([f(X[:, d]) for d in range(X.shape[1])])
         self.μ = apply_per_dim(np.mean, X)
         self.σ = apply_per_dim(np.std, X)
-        self.σ[self.σ == 0] = 1 # avoid 0^-1
+        # dont scale dims with no std
+        self.μ[self.σ == 0] = 0
+        self.σ[self.σ == 0] = 1
     
     def transform(self, X) -> np.array:
         return (X - self.μ) / self.σ
